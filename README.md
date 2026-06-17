@@ -92,10 +92,14 @@ Make sure the repository is on GitHub.
 
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import `MariamManjo/exam-scheduler` (or your fork)
-3. Keep the default settings from `vercel.json`:
+3. In **Project Settings**, confirm:
+   - **Root Directory:** leave empty (repository root, not `frontend/` or `backend/`)
+   - **Framework Preset:** `Other` (do not use FastAPI)
    - **Install Command:** `npm install && npm install --prefix frontend`
-   - **Build Command:** `npm run build --prefix frontend`
+   - **Build Command:** `npm run build`
    - **Output Directory:** `frontend/dist`
+
+`vercel.json` sets `"framework": null` so Vercel treats this as a Node.js project with TypeScript API routes, not Python/FastAPI.
 
 ### 3. Add environment variables
 
@@ -172,6 +176,7 @@ Processes **1 image per request** (the frontend sends one compressed screenshot 
 - Images are compressed in the browser before OCR to stay within Vercel request limits.
 - OCR uses a default year (`OCR_DEFAULT_YEAR`, default `2026`) when BTU screenshots show month/day only.
 - No separate Python backend, Railway, or Render setup is required.
+- If Vercel still shows a FastAPI error, open **Project Settings → General → Framework Preset** and set it to **Other**, then redeploy.
 
 ## Scripts
 

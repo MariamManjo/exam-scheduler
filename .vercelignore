@@ -1,0 +1,26 @@
+# Legacy Python backend (local only)
+backend/
+exam-scheduler/
+venv/
+**/__pycache__/
+**/*.py
+**/*.pyc
+requirements.txt
+runtime.txt
+Procfile
+pyproject.toml
+Pipfile
+Pipfile.lock
+poetry.lock
+.python-version
+
+# Local env and build artifacts
+.env
+.env.*
+!.env.example
+frontend/.env
+.tmp/
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.vercel

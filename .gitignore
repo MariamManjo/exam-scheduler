@@ -15,9 +15,18 @@ build/
 .tmp/
 
 # Python (legacy local environments)
+backend/
+exam-scheduler/
 venv/
 __pycache__/
 *.py[cod]
+requirements.txt
+runtime.txt
+Procfile
+pyproject.toml
+Pipfile
+Pipfile.lock
+.python-version
 
 # OS / editor
 .DS_Store
