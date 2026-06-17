@@ -15,15 +15,19 @@ Upload Georgian university (BTU) exam timetable screenshots, review extracted ex
 
 ```
 exam-scheduler/
-├── api/                  # Vercel serverless functions
+├── api/                  # Built Node.js route output (generated at build time)
+├── server/               # TypeScript API route source
+│   ├── extract.ts        # POST /api/extract
 │   ├── calculate.ts      # POST /api/calculate
-│   ├── extract.ts        # POST /api/extract (batched OCR)
 │   └── _lib/
 │       ├── ocr.ts
 │       └── scheduler.ts
 ├── frontend/             # React + Vite UI
-├── package.json          # API dependencies + dev scripts
-└── vercel.json           # Vercel build + function settings
+├── package.json          # Node.js project entrypoint
+├── scripts/
+│   ├── build-api.mjs
+│   └── verify-api.mjs
+└── vercel.json
 ```
 
 ## Prerequisites
@@ -93,13 +97,13 @@ Make sure the repository is on GitHub.
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import `MariamManjo/exam-scheduler` (or your fork)
 3. In **Project Settings**, confirm:
-   - **Root Directory:** leave empty (repository root, not `frontend/` or `backend/`)
-   - **Framework Preset:** `Other` (do not use FastAPI)
+   - **Root Directory:** leave empty (repository root)
+   - **Framework Preset:** `Other`
    - **Install Command:** `npm install && npm install --prefix frontend`
    - **Build Command:** `npm run build`
-   - **Output Directory:** `frontend/dist`
+   - **Output Directory:** leave empty when using `vercel.json` builds
 
-`vercel.json` sets `"framework": null` so Vercel treats this as a Node.js project with TypeScript API routes, not Python/FastAPI.
+`vercel.json` uses explicit `@vercel/static-build` and `@vercel/node` builders so Vercel does not run FastAPI/Python detection.
 
 ### 3. Add environment variables
 

@@ -1,20 +1,32 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "framework": null,
-  "installCommand": "npm install && npm install --prefix frontend",
-  "buildCommand": "npm run build",
-  "outputDirectory": "frontend/dist",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "frontend/dist"
+      }
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    { "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
   "functions": {
-    "api/**/*.ts": {
+    "api/**/*.js": {
       "maxDuration": 60,
       "memory": 1024
     }
-  },
-  "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }

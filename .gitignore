@@ -13,6 +13,8 @@ dist/
 frontend/dist/
 build/
 .tmp/
+api/*.js
+api/*.js.map
 
 # Python (legacy local environments)
 backend/

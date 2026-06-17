@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vercel dev",
-    "build": "npm run typecheck:api && npm run verify:api && npm run build --prefix frontend",
-    "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
+    "build": "npm run typecheck:api && npm run build:api && npm run verify:api && npm run build --prefix frontend",
+    "build:api": "node scripts/build-api.mjs",
+    "typecheck:api": "tsc -p server/tsconfig.json --noEmit",
     "verify:api": "node scripts/verify-api.mjs",
     "lint": "npm run lint --prefix frontend"
   },

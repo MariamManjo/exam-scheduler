@@ -1,32 +1,14 @@
-import { build } from 'esbuild'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildApiRoutes } from './build-api.mjs'
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const outputDir = path.join(rootDir, '.tmp', 'api-verify')
-
-async function bundleApiRoutes() {
-  await rm(outputDir, { recursive: true, force: true })
-  await mkdir(outputDir, { recursive: true })
-
-  const entryPoints = ['extract.ts', 'calculate.ts'].map((file) => path.join(rootDir, 'api', file))
-
-  await build({
-    entryPoints,
-    outdir: outputDir,
-    bundle: true,
-    platform: 'node',
-    format: 'esm',
-    packages: 'bundle',
-    target: 'node20',
-    logLevel: 'silent',
-  })
-}
+const outputDir = path.join(rootDir, 'api')
+const verifyDir = path.join(rootDir, '.tmp', 'api-verify')
 
 async function verifyExtractRoute() {
-  const moduleUrl = path.join(outputDir, 'extract.js')
-  const module = await import(pathToFileUrl(moduleUrl))
+  const module = await import(pathToFileUrl(path.join(outputDir, 'extract.js')))
 
   if (typeof module.POST !== 'function') {
     throw new Error('extract route does not export POST')
@@ -88,8 +70,7 @@ async function verifyExtractRoute() {
 }
 
 async function verifyCalculateRoute() {
-  const moduleUrl = path.join(outputDir, 'calculate.js')
-  const module = await import(pathToFileUrl(moduleUrl))
+  const module = await import(pathToFileUrl(path.join(outputDir, 'calculate.js')))
 
   if (typeof module.POST !== 'function') {
     throw new Error('calculate route does not export POST')
@@ -126,11 +107,12 @@ function pathToFileUrl(filePath) {
 }
 
 async function main() {
-  await bundleApiRoutes()
+  await mkdir(verifyDir, { recursive: true })
+  await buildApiRoutes()
   await verifyExtractRoute()
   await verifyCalculateRoute()
   await writeFile(
-    path.join(outputDir, 'verify.ok'),
+    path.join(verifyDir, 'verify.ok'),
     `verified at ${new Date().toISOString()}\n`,
     'utf8',
   )
