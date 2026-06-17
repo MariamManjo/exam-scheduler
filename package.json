@@ -4,11 +4,15 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vercel dev",
-    "build": "npm run build --prefix frontend",
+    "build": "npm run typecheck:api && npm run build --prefix frontend",
+    "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
     "lint": "npm run lint --prefix frontend"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "openai": "^2.0.0"
+    "openai": "^6.44.0"
   },
   "devDependencies": {
     "@types/node": "^24.12.3",

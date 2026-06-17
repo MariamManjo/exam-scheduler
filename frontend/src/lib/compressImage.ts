@@ -1,6 +1,6 @@
 const MAX_EDGE = 1600
 const JPEG_QUALITY = 0.82
-const MAX_BYTES = 1_800_000
+const MAX_BYTES = 1_400_000
 
 export interface CompressedImagePayload {
   base64: string

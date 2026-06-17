@@ -1,13 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { extractStudentFromImage } from './_lib/ocr'
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '4mb',
-    },
-  },
-}
+import { parseJsonBody } from './_lib/parseBody'
 
 interface ExtractImagePayload {
   index: number
@@ -25,18 +18,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const body = req.body as ExtractRequestBody
-  const images = body?.images ?? []
-
-  if (images.length === 0) {
-    return res.status(400).json({ error: 'At least one image is required.' })
-  }
-
-  if (images.length > 3) {
-    return res.status(400).json({ error: 'Process at most 3 images per request.' })
-  }
-
   try {
+    const body = parseJsonBody<ExtractRequestBody>(req)
+    const images = body.images ?? []
+
+    if (images.length === 0) {
+      return res.status(400).json({ error: 'At least one image is required.' })
+    }
+
+    if (images.length > 2) {
+      return res.status(400).json({ error: 'Process at most 2 images per request.' })
+    }
+
     const students = []
 
     for (const image of images) {
@@ -60,6 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'OCR extraction failed.'
+    if (message.includes('Request body is required') || message.includes('JSON')) {
+      return res.status(400).json({ error: 'Invalid JSON request body.' })
+    }
     const status = message.includes('OPENAI_API_KEY') ? 500 : 502
     return res.status(status).json({ error: message })
   }

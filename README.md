@@ -129,7 +129,7 @@ After deployment:
 
 ### `POST /api/extract`
 
-Processes **1–3 images per request** (the frontend sends batches of 2).
+Processes **1 image per request** (the frontend sends one compressed screenshot at a time).
 
 ```json
 {

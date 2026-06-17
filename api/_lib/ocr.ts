@@ -103,7 +103,7 @@ function getDefaultOcrYear(): string {
   return match ? match[1] : DEFAULT_OCR_YEAR
 }
 
-function getOpenAiClient(): OpenAI {
+function getOpenAiClient() {
   const apiKey = process.env.OPENAI_API_KEY?.trim()
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY is not set in Vercel environment variables.')
@@ -274,7 +274,7 @@ export async function extractStudentFromImage(
             type: 'input_text',
             text: `${EXTRACTION_PROMPT}\n\nThis screenshot belongs to exactly one student.\nFallback student name if not visible: ${fallbackName}`,
           },
-          { type: 'input_image', image_url: dataUrl },
+          { type: 'input_image', image_url: dataUrl, detail: 'auto' },
         ],
       },
     ],
