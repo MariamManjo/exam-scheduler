@@ -1,13 +1,13 @@
-import type { VercelRequest } from '@vercel/node'
+export async function parseJsonBody<T>(request: Request): Promise<T> {
+  const contentType = request.headers.get('content-type') ?? ''
 
-export function parseJsonBody<T>(req: VercelRequest): T {
-  if (req.body == null || req.body === '') {
-    throw new Error('Request body is required.')
+  if (!contentType.includes('application/json')) {
+    throw new Error('Request body must be application/json.')
   }
 
-  if (typeof req.body === 'string') {
-    return JSON.parse(req.body) as T
+  try {
+    return (await request.json()) as T
+  } catch {
+    throw new Error('Invalid JSON request body.')
   }
-
-  return req.body as T
 }

@@ -1,6 +1,5 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { parseJsonBody } from './_lib/parseBody'
-import { findBestLectureWindows, type Student } from './_lib/scheduler'
+import { parseJsonBody } from './_lib/parseBody.js'
+import { findBestLectureWindows, type Student } from './_lib/scheduler.js'
 
 interface CalculateRequestBody {
   students: Student[]
@@ -8,36 +7,41 @@ interface CalculateRequestBody {
   end_date: string
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
+export async function POST(request: Request): Promise<Response> {
   try {
-    const body = parseJsonBody<CalculateRequestBody>(req)
+    const body = await parseJsonBody<CalculateRequestBody>(request)
     const students = body.students ?? []
     const startDate = body.start_date?.trim()
     const endDate = body.end_date?.trim()
 
     if (!startDate || !endDate) {
-      return res.status(400).json({ error: 'start_date and end_date are required.' })
+      return Response.json({ error: 'start_date and end_date are required.' }, { status: 400 })
     }
 
     if (startDate > endDate) {
-      return res.status(400).json({ error: 'start_date must be on or before end_date.' })
+      return Response.json(
+        { error: 'start_date must be on or before end_date.' },
+        { status: 400 },
+      )
     }
 
     if (students.length === 0) {
-      return res.status(400).json({ error: 'At least one student is required.' })
+      return Response.json({ error: 'At least one student is required.' }, { status: 400 })
     }
 
     const result = findBestLectureWindows(students, startDate, endDate)
-    return res.status(200).json(result)
+    return Response.json(result)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Schedule calculation failed.'
-    if (message.includes('Request body is required') || message.includes('JSON')) {
-      return res.status(400).json({ error: 'Invalid JSON request body.' })
+
+    if (
+      message.includes('application/json') ||
+      message.includes('Invalid JSON') ||
+      message.includes('Request body')
+    ) {
+      return Response.json({ error: 'Invalid JSON request body.' }, { status: 400 })
     }
-    return res.status(400).json({ error: message })
+
+    return Response.json({ error: message }, { status: 400 })
   }
 }

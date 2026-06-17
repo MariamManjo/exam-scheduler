@@ -12,6 +12,7 @@ frontend/node_modules/
 dist/
 frontend/dist/
 build/
+.tmp/
 
 # Python (legacy local environments)
 venv/

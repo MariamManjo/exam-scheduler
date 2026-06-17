@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vercel dev",
-    "build": "npm run typecheck:api && npm run build --prefix frontend",
+    "build": "npm run typecheck:api && npm run verify:api && npm run build --prefix frontend",
     "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
+    "verify:api": "node scripts/verify-api.mjs",
     "lint": "npm run lint --prefix frontend"
   },
   "engines": {
@@ -16,7 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.12.3",
-    "@vercel/node": "^5.3.21",
+    "esbuild": "^0.25.0",
     "typescript": "~6.0.2",
     "vercel": "^41.7.0"
   }

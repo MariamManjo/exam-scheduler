@@ -1,6 +1,5 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { extractStudentFromImage } from './_lib/ocr'
-import { parseJsonBody } from './_lib/parseBody'
+import { extractStudentFromImage } from './_lib/ocr.js'
+import { parseJsonBody } from './_lib/parseBody.js'
 
 interface ExtractImagePayload {
   index: number
@@ -13,28 +12,27 @@ interface ExtractRequestBody {
   images: ExtractImagePayload[]
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
+export async function POST(request: Request): Promise<Response> {
   try {
-    const body = parseJsonBody<ExtractRequestBody>(req)
+    const body = await parseJsonBody<ExtractRequestBody>(request)
     const images = body.images ?? []
 
     if (images.length === 0) {
-      return res.status(400).json({ error: 'At least one image is required.' })
+      return Response.json({ error: 'At least one image is required.' }, { status: 400 })
     }
 
     if (images.length > 2) {
-      return res.status(400).json({ error: 'Process at most 2 images per request.' })
+      return Response.json({ error: 'Process at most 2 images per request.' }, { status: 400 })
     }
 
     const students = []
 
     for (const image of images) {
       if (!image.data || typeof image.index !== 'number') {
-        return res.status(400).json({ error: 'Each image must include index and data.' })
+        return Response.json(
+          { error: 'Each image must include index and data.' },
+          { status: 400 },
+        )
       }
 
       const student = await extractStudentFromImage(
@@ -48,15 +46,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     students.sort((a, b) => a.index - b.index)
 
-    return res.status(200).json({
+    return Response.json({
       students: students.map((entry) => entry.student),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'OCR extraction failed.'
-    if (message.includes('Request body is required') || message.includes('JSON')) {
-      return res.status(400).json({ error: 'Invalid JSON request body.' })
+
+    if (
+      message.includes('application/json') ||
+      message.includes('Invalid JSON') ||
+      message.includes('Request body')
+    ) {
+      return Response.json({ error: 'Invalid JSON request body.' }, { status: 400 })
     }
+
     const status = message.includes('OPENAI_API_KEY') ? 500 : 502
-    return res.status(status).json({ error: message })
+    return Response.json({ error: message }, { status })
   }
 }

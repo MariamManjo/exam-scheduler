@@ -1,5 +1,3 @@
-import OpenAI from 'openai'
-
 const MODEL = 'gpt-4.1-mini'
 const DEFAULT_OCR_YEAR = '2026'
 const ISO_DATE_PATTERN = /^(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
@@ -103,12 +101,25 @@ function getDefaultOcrYear(): string {
   return match ? match[1] : DEFAULT_OCR_YEAR
 }
 
-function getOpenAiClient() {
+type OpenAIClient = Awaited<ReturnType<typeof createOpenAiClient>>
+
+let cachedClient: OpenAIClient | null = null
+
+async function createOpenAiClient() {
   const apiKey = process.env.OPENAI_API_KEY?.trim()
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY is not set in Vercel environment variables.')
   }
+
+  const { default: OpenAI } = await import('openai')
   return new OpenAI({ apiKey })
+}
+
+async function getOpenAiClient() {
+  if (!cachedClient) {
+    cachedClient = await createOpenAiClient()
+  }
+  return cachedClient
 }
 
 function normalizeTime(value: string): string {
@@ -260,7 +271,7 @@ export async function extractStudentFromImage(
   contentType: string,
   fallbackName: string,
 ): Promise<ExtractedStudent> {
-  const client = getOpenAiClient()
+  const client = await getOpenAiClient()
   const mediaType = contentType.startsWith('image/') ? contentType : 'image/jpeg'
   const dataUrl = `data:${mediaType};base64,${imageBase64}`
 
