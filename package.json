@@ -4,10 +4,12 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vercel dev",
+    "postinstall": "npm install --prefix frontend",
     "build": "npm run typecheck:api && npm run build:api && npm run verify:api && npm run build --prefix frontend",
     "build:api": "node scripts/build-api.mjs",
     "typecheck:api": "tsc -p server/tsconfig.json --noEmit",
     "verify:api": "node scripts/verify-api.mjs",
+    "verify:vercel": "node scripts/verify-vercel-structure.mjs",
     "lint": "npm run lint --prefix frontend"
   },
   "engines": {

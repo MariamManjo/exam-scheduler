@@ -97,13 +97,11 @@ Make sure the repository is on GitHub.
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import `MariamManjo/exam-scheduler` (or your fork)
 3. In **Project Settings**, confirm:
-   - **Root Directory:** leave empty (repository root)
-   - **Framework Preset:** `Other`
-   - **Install Command:** `npm install && npm install --prefix frontend`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** leave empty when using `vercel.json` builds
+   - **Root Directory:** leave empty (repository root — not `frontend/`)
+   - **Framework Preset:** `Other` (not FastAPI)
+   - **Install / Build / Output:** leave empty — `vercel.json` sets these
 
-`vercel.json` uses explicit `@vercel/static-build` and `@vercel/node` builders so Vercel does not run FastAPI/Python detection.
+`vercel.json` deploys `frontend/dist` as static files and treats `api/*.js` as Node.js serverless routes. TypeScript API source lives in `server/`; only the esbuild output in `api/` is deployed. There is no Python in git, so Vercel should not detect FastAPI.
 
 ### 3. Add environment variables
 
@@ -120,9 +118,15 @@ Apply to **Production**, **Preview**, and **Development**.
 
 Click **Deploy**. Vercel will:
 
-1. install root + frontend dependencies
-2. build the React app
-3. deploy `/api/extract` and `/api/calculate` as serverless functions
+1. install root + frontend dependencies (`postinstall` also installs `frontend/`)
+2. run `npm run build` (esbuild → `api/*.js`, then Vite → `frontend/dist`)
+3. deploy `/api/extract` and `/api/calculate` as Node.js serverless functions
+
+Before deploying, you can simulate a clean Vercel clone locally:
+
+```bash
+npm run verify:vercel
+```
 
 ### 5. Verify
 
@@ -187,5 +191,6 @@ Processes **1 image per request** (the frontend sends one compressed screenshot 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Full-stack local dev via `vercel dev` |
-| `npm run build` | Build frontend for production |
+| `npm run build` | Build API routes + frontend for production |
+| `npm run verify:vercel` | Simulate clean Vercel build (no prebuilt `api/*.js`) |
 | `npm run lint` | Lint frontend |
