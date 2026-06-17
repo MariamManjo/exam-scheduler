@@ -1,5 +1,6 @@
+import { apiPath, EXTRACT_BATCH_SIZE } from '../lib/api'
+import { compressImageForOcr } from '../lib/compressImage'
 import { createId } from '../lib/ids'
-import { getApiUrl } from '../config/env'
 import type { ExtractedStudent, UploadedImage } from '../types/upload'
 
 export interface ExtractionProgress {
@@ -7,6 +8,8 @@ export interface ExtractionProgress {
   currentImageIndex: number
   currentImageName: string
   imageProgress: number
+  batchIndex: number
+  totalBatches: number
 }
 
 export class ExtractApiError extends Error {
@@ -39,10 +42,12 @@ function parseErrorMessage(text: string, status: number): string {
   if (!text) return message
 
   try {
-    const body = JSON.parse(text) as { detail?: string | Array<{ msg?: string }> }
-    if (typeof body.detail === 'string') {
-      return body.detail
+    const body = JSON.parse(text) as {
+      error?: string
+      detail?: string | Array<{ msg?: string }>
     }
+    if (typeof body.error === 'string') return body.error
+    if (typeof body.detail === 'string') return body.detail
     if (Array.isArray(body.detail)) {
       return body.detail.map((item) => item.msg).filter(Boolean).join(', ')
     }
@@ -56,12 +61,14 @@ function parseErrorMessage(text: string, status: number): string {
 function mapToExtractedStudents(
   apiStudents: ApiExtractedStudent[],
   images: UploadedImage[],
+  startIndex: number,
 ): ExtractedStudent[] {
-  return apiStudents.map((student, index) => {
-    const sourceImageId = images[index]?.id ?? ''
+  return apiStudents.map((student, offset) => {
+    const imageIndex = startIndex + offset
+    const sourceImageId = images[imageIndex]?.id ?? ''
     return {
       id: createId(),
-      name: student.name?.trim() || `Student ${index + 1}`,
+      name: student.name?.trim() || `Student ${imageIndex + 1}`,
       sourceImageId,
       exams: (student.exams ?? []).map((exam) => ({
         id: createId(),
@@ -82,43 +89,81 @@ export async function extractFromImages(
     return []
   }
 
-  const formData = new FormData()
-  images.forEach((image) => {
-    formData.append('images', image.file, image.file.name)
-  })
+  const totalBatches = Math.ceil(images.length / EXTRACT_BATCH_SIZE)
+  const extractedStudents: ExtractedStudent[] = []
 
-  onProgress({
-    overallProgress: 10,
-    currentImageIndex: 1,
-    currentImageName: images[0].file.name,
-    imageProgress: 0,
-  })
+  for (let batchIndex = 0; batchIndex < totalBatches; batchIndex += 1) {
+    const startIndex = batchIndex * EXTRACT_BATCH_SIZE
+    const batchImages = images.slice(startIndex, startIndex + EXTRACT_BATCH_SIZE)
+    const batchStartProgress = Math.round((batchIndex / totalBatches) * 100)
+    const batchEndProgress = Math.round(((batchIndex + 1) / totalBatches) * 100)
 
-  const response = await fetch(`${getApiUrl()}/extract`, {
-    method: 'POST',
-    body: formData,
-  })
+    onProgress({
+      overallProgress: batchStartProgress,
+      currentImageIndex: startIndex + 1,
+      currentImageName: batchImages[0]?.file.name ?? '',
+      imageProgress: 10,
+      batchIndex: batchIndex + 1,
+      totalBatches,
+    })
 
-  onProgress({
-    overallProgress: 80,
-    currentImageIndex: images.length,
-    currentImageName: images[images.length - 1]?.file.name ?? '',
-    imageProgress: 80,
-  })
+    const payloadImages = await Promise.all(
+      batchImages.map(async (image, offset) => {
+        const index = startIndex + offset
+        const compressed = await compressImageForOcr(image.file)
+        return {
+          index,
+          data: compressed.base64,
+          contentType: compressed.contentType,
+          fallbackName: `Student ${index + 1}`,
+        }
+      }),
+    )
 
-  if (!response.ok) {
-    const message = parseErrorMessage(await response.text(), response.status)
-    throw new ExtractApiError(message, response.status)
+    onProgress({
+      overallProgress: batchStartProgress + Math.round((batchEndProgress - batchStartProgress) * 0.35),
+      currentImageIndex: startIndex + batchImages.length,
+      currentImageName: batchImages[batchImages.length - 1]?.file.name ?? '',
+      imageProgress: 40,
+      batchIndex: batchIndex + 1,
+      totalBatches,
+    })
+
+    const response = await fetch(apiPath('/api/extract'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ images: payloadImages }),
+    })
+
+    onProgress({
+      overallProgress: batchStartProgress + Math.round((batchEndProgress - batchStartProgress) * 0.85),
+      currentImageIndex: startIndex + batchImages.length,
+      currentImageName: batchImages[batchImages.length - 1]?.file.name ?? '',
+      imageProgress: 85,
+      batchIndex: batchIndex + 1,
+      totalBatches,
+    })
+
+    if (!response.ok) {
+      const message = parseErrorMessage(await response.text(), response.status)
+      throw new ExtractApiError(message, response.status)
+    }
+
+    const data = (await response.json()) as ExtractApiResponse
+    extractedStudents.push(...mapToExtractedStudents(data.students ?? [], images, startIndex))
   }
-
-  const data = (await response.json()) as ExtractApiResponse
 
   onProgress({
     overallProgress: 100,
     currentImageIndex: images.length,
     currentImageName: images[images.length - 1]?.file.name ?? '',
     imageProgress: 100,
+    batchIndex: totalBatches,
+    totalBatches,
   })
 
-  return mapToExtractedStudents(data.students ?? [], images)
+  return extractedStudents
 }

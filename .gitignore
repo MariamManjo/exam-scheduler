@@ -4,21 +4,23 @@ backend/.env
 frontend/.env
 *.env.local
 
-# Python
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build output
+dist/
+frontend/dist/
+build/
+
+# Python (legacy local environments)
 venv/
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-.eggs/
-
-# Node / frontend
-node_modules/
-dist/
-build/
 
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Vercel
+.vercel

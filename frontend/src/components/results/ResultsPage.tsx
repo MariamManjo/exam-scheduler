@@ -1,17 +1,22 @@
 import { formatDisplayDate } from '../../lib/format'
 import type { ScheduleResponse } from '../../types/schedule'
+import type { ExtractedStudent } from '../../types/upload'
 import type { ScheduleRange } from '../schedule/SchedulePage'
 import { PageHeader } from '../layout/PageHeader'
+import { BestSlotsSummary } from './BestSlotsSummary'
+import { ExportResultsPanel } from './ExportResultsPanel'
 import { ScheduleResultsList } from './ScheduleResultsList'
 
 interface ResultsPageProps {
   result: ScheduleResponse
   range: ScheduleRange
+  students: ExtractedStudent[]
   onBack: () => void
 }
 
-export function ResultsPage({ result, range, onBack }: ResultsPageProps) {
+export function ResultsPage({ result, range, students, onBack }: ResultsPageProps) {
   const topCount = result.best_windows.length
+  const exportContext = { result, range, students }
 
   return (
     <div>
@@ -37,6 +42,14 @@ export function ResultsPage({ result, range, onBack }: ResultsPageProps) {
           </p>
         </div>
       </section>
+
+      <div className="mb-6">
+        <BestSlotsSummary result={result} />
+      </div>
+
+      <div className="mb-6">
+        <ExportResultsPanel context={exportContext} />
+      </div>
 
       <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-8">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

@@ -18,6 +18,8 @@ const INITIAL_PROGRESS: ExtractionProgress = {
   currentImageIndex: 0,
   currentImageName: '',
   imageProgress: 0,
+  batchIndex: 0,
+  totalBatches: 0,
 }
 
 export function ImageUploadPage({ upload, onComplete }: ImageUploadPageProps) {
@@ -67,7 +69,7 @@ export function ImageUploadPage({ upload, onComplete }: ImageUploadPageProps) {
         err instanceof ExtractApiError
           ? err.message
           : err instanceof TypeError
-            ? 'Unable to reach the OCR server. Make sure the backend is running.'
+            ? 'Unable to reach the OCR API. Run `npm run dev` from the project root for local development.'
             : 'Failed to extract exam data from images. Please try again.'
       setProcessError(message)
       images.forEach((image) => updateImageProgress(image.id, 0, 'error'))

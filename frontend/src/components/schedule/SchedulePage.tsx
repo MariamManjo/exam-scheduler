@@ -78,9 +78,7 @@ export function SchedulePage({
       if (err instanceof ScheduleApiError) {
         setError(err.message)
       } else if (err instanceof TypeError) {
-        setError(
-          'Unable to reach the scheduling server. Make sure the backend is running at http://localhost:8000.',
-        )
+        setError('Unable to reach the scheduling API. Run `npm run dev` from the project root.')
       } else {
         setError('Failed to generate the schedule. Please try again.')
       }

@@ -1,0 +1,19 @@
+{
+  "name": "exam-scheduler",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "npm run build --prefix frontend",
+    "lint": "npm run lint --prefix frontend"
+  },
+  "dependencies": {
+    "openai": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@vercel/node": "^5.3.21",
+    "typescript": "~6.0.2",
+    "vercel": "^41.7.0"
+  }
+}

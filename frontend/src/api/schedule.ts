@@ -1,4 +1,4 @@
-import { getApiUrl } from '../config/env'
+import { apiPath } from '../lib/api'
 import type { CalculateScheduleRequest, ScheduleResponse } from '../types/schedule'
 
 export class ScheduleApiError extends Error {
@@ -14,7 +14,7 @@ export class ScheduleApiError extends Error {
 export async function calculateSchedule(
   request: CalculateScheduleRequest,
 ): Promise<ScheduleResponse> {
-  const response = await fetch(`${getApiUrl()}/calculate`, {
+  const response = await fetch(apiPath('/api/calculate'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -29,8 +29,13 @@ export async function calculateSchedule(
 
     if (text) {
       try {
-        const body = JSON.parse(text) as { detail?: string | Array<{ msg?: string }> }
-        if (typeof body.detail === 'string') {
+        const body = JSON.parse(text) as {
+          error?: string
+          detail?: string | Array<{ msg?: string }>
+        }
+        if (typeof body.error === 'string') {
+          message = body.error
+        } else if (typeof body.detail === 'string') {
           message = body.detail
         } else if (Array.isArray(body.detail)) {
           message = body.detail.map((item) => item.msg).filter(Boolean).join(', ')

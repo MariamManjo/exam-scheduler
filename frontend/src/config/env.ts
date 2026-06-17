@@ -1,6 +1,6 @@
-const DEFAULT_API_URL = 'http://localhost:8000'
+const DEFAULT_API_URL = ''
 
 export function getApiUrl(): string {
   const url = import.meta.env.VITE_API_URL?.trim()
-  return url || DEFAULT_API_URL
+  return url ?? DEFAULT_API_URL
 }

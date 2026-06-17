@@ -11,7 +11,7 @@ export function UploadProgressPanel({ progress }: UploadProgressPanelProps) {
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-ink">Processing images</h2>
           <p className="mt-1 text-sm text-subtle">
-            Extracting exam rows from your images with OpenAI Vision.
+            Extracting exam rows in small batches to stay within server limits.
           </p>
         </div>
         <span className="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">
@@ -30,7 +30,9 @@ export function UploadProgressPanel({ progress }: UploadProgressPanelProps) {
         <p className="font-medium text-ink">
           Image {progress.currentImageIndex} · {progress.currentImageName}
         </p>
-        <p className="text-subtle">Current file {progress.imageProgress}%</p>
+        <p className="text-subtle">
+          Batch {progress.batchIndex} of {progress.totalBatches} · file {progress.imageProgress}%
+        </p>
       </div>
     </section>
   )

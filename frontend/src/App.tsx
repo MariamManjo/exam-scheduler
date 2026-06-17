@@ -65,6 +65,7 @@ export default function App() {
         <ResultsPage
           result={scheduleResult}
           range={scheduleRange}
+          students={extractedStudents}
           onBack={() => setStep('schedule')}
         />
       )}
