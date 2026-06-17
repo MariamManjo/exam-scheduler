@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+backend/.env
+frontend/.env
+*.env.local
+
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
