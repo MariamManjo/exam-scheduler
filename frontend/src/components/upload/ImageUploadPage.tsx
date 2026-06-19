@@ -69,7 +69,7 @@ export function ImageUploadPage({ upload, onComplete }: ImageUploadPageProps) {
         err instanceof ExtractApiError
           ? err.message
           : err instanceof TypeError
-            ? 'Unable to reach the OCR API. Run `npm run dev` from the project root for local development.'
+            ? 'Unable to reach the OCR API. Run `npm run dev` from the project root and open http://127.0.0.1:5173.'
             : 'Failed to extract exam data from images. Please try again.'
       setProcessError(message)
       images.forEach((image) => updateImageProgress(image.id, 0, 'error'))

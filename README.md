@@ -33,8 +33,8 @@ exam-scheduler/
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
-- [Vercel CLI](https://vercel.com/docs/cli) for local full-stack development
 - OpenAI API key with access to `gpt-4.1-mini`
+- [Vercel CLI](https://vercel.com/docs/cli) optional (`npm run dev:vercel`)
 
 ## Local development
 
@@ -47,18 +47,20 @@ npm install --prefix frontend
 
 ### 2. Configure environment variables
 
-Create a local env file for Vercel dev (not committed):
+Create a local env file at the project root (not committed):
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Edit `.env.local`:
+Edit `.env`:
 
 ```env
 OPENAI_API_KEY=sk-your-openai-api-key
 OCR_DEFAULT_YEAR=2026
 ```
+
+Leave `frontend/.env` without `VITE_API_URL` so the Vite dev server proxies `/api/*` to `http://127.0.0.1:3000`.
 
 ### 3. Run the full app locally
 
@@ -68,17 +70,22 @@ From the project root:
 npm run dev
 ```
 
-This runs `vercel dev`, which serves:
+This starts:
 
-- the React app
-- `/api/extract`
-- `/api/calculate`
+- a local Node API server on `http://127.0.0.1:3000` (`/api/extract`, `/api/calculate`)
+- the Vite frontend on `http://127.0.0.1:5173`
 
-Open the URL shown in the terminal (usually `http://localhost:3000`).
+Open **http://127.0.0.1:5173** in your browser.
+
+To use `vercel dev` instead (requires `vercel login`):
+
+```bash
+npm run dev:vercel
+```
 
 ### Frontend-only dev (optional)
 
-If you only need UI work and already have `vercel dev` running on port 3000:
+If you only need UI work and already have the local API server running on port 3000:
 
 ```bash
 npm run dev --prefix frontend

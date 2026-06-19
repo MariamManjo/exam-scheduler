@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:vercel": "vercel dev",
     "postinstall": "npm install --prefix frontend",
     "build": "npm run typecheck:api && npm run build:api && npm run verify:api && npm run build --prefix frontend",
     "build:api": "node scripts/build-api.mjs",
