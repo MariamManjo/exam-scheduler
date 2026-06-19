@@ -125,8 +125,8 @@ Apply to **Production**, **Preview**, and **Development**.
 
 Click **Deploy**. Vercel will:
 
-1. install root + frontend dependencies (`postinstall` also installs `frontend/`)
-2. run `npm run build` (esbuild → `api/*.js`, then Vite → `frontend/dist`)
+1. install root + frontend dependencies and prebuild `api/*.js` routes
+2. run `npm run build` (rebuild API routes, then Vite → `frontend/dist`)
 3. deploy `/api/extract` and `/api/calculate` as Node.js serverless functions
 
 Before deploying, you can simulate a clean Vercel clone locally:

@@ -61,8 +61,12 @@ async function assertVercelConfig() {
     throw new Error('vercel.json outputDirectory must be frontend/dist')
   }
 
-  if (!config.functions?.['api/**/*.js']) {
-    throw new Error('vercel.json must configure api/**/*.js serverless functions')
+  if (!config.installCommand?.includes('npm run build:api')) {
+    throw new Error('vercel.json installCommand must run npm run build:api before vercel build')
+  }
+
+  if (!config.functions?.['api/extract.js'] || !config.functions?.['api/calculate.js']) {
+    throw new Error('vercel.json must configure api/extract.js and api/calculate.js serverless functions')
   }
 }
 
@@ -73,7 +77,7 @@ async function cleanBuildArtifacts() {
   await rm(frontendDist, { recursive: true, force: true })
 }
 
-async function assertBuiltArtifacts() {
+async function assertApiRoutes() {
   for (const route of ['extract.js', 'calculate.js']) {
     const routePath = path.join(apiDir, route)
     if (!(await exists(routePath))) {
@@ -85,6 +89,10 @@ async function assertBuiltArtifacts() {
       throw new Error(`api/${route} looks too small (${routeStat.size} bytes)`)
     }
   }
+}
+
+async function assertBuiltArtifacts() {
+  await assertApiRoutes()
 
   if (!(await exists(path.join(frontendDist, 'index.html')))) {
     throw new Error('missing frontend build output at frontend/dist/index.html')
@@ -98,6 +106,10 @@ async function main() {
 
   console.log('Simulating clean Vercel clone (no prebuilt api/*.js or frontend/dist)...')
   await cleanBuildArtifacts()
+
+  console.log('Running install-phase API build (as on Vercel installCommand)...')
+  execSync('npm run build:api', { cwd: rootDir, stdio: 'inherit' })
+  await assertApiRoutes()
 
   console.log('Running production build...')
   execSync('npm run build', { cwd: rootDir, stdio: 'inherit' })
